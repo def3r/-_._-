@@ -5,6 +5,7 @@
 
 #include <errno.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -84,7 +85,7 @@ typedef struct DbVoidPtrVector char_v;
 
 static char *sh_prompt = "cash > ";
 
-static pid_t sh_exec(char *argv[])
+static pid_t cash_exec(char *argv[])
 {
 	pid_t child = fork();
 	if (child == -1) {
@@ -92,7 +93,7 @@ static pid_t sh_exec(char *argv[])
 	} else if (child == 0) {
 		execvp(argv[0], argv);
 		fprintf(stderr, "(%d): %s\n", errno, strerror(errno));
-		return errno;
+		exit(EXIT_FAILURE);
 	}
 	return child;
 }
@@ -146,26 +147,59 @@ static char_v *tokens_line(char *in)
 	return tok_v;
 }
 
+static void sh_cd(char_v *tok_v)
+{
+	if (chdir(tok_v->arr[1]) == -1)
+		fprintf(stderr, "(%d): %s\n", errno, strerror(errno));
+}
+
 int main()
 {
-	while (1) {
+	int8_t exitcode = 0;
+	bool cash_exit = false;
+	while (!cash_exit) {
 		char *in = readline(sh_prompt);
 
 		char_v *tok_v = tokens_line(in);
-		if (tok_v == NULL) {
+		if (tok_v == NULL)
+			goto cleanup;
+
+		if (strcmp(tok_v->arr[0], "cd") == 0 && tok_v->size == 2) {
+			sh_cd(tok_v);
+			goto cleanup;
+
+		} else if (strcmp(tok_v->arr[0], "exit") == 0 &&
+			   tok_v->size <= 2) {
+			errno = 0;
+			long eval = tok_v->size == 1 ?
+					    0 :
+					    strtol(tok_v->arr[1], NULL, 0);
+			if (errno == ERANGE) {
+				fprintf(stderr, "(%d): %s\n", errno,
+					strerror(errno));
+				goto cleanup;
+			}
+			if (eval < INT8_MIN || eval > INT8_MAX) {
+				fprintf(stderr, "Out of range: %ld\n", eval);
+				goto cleanup;
+			}
+
+			exitcode = eval;
+			cash_exit = true;
 			goto cleanup;
 		}
-		v_push(tok_v, NULL);
 
-		pid_t child = sh_exec((char **)tok_v->arr);
-		if (child != -1) {
+		v_push(tok_v, NULL);
+		pid_t child = cash_exec((char **)tok_v->arr);
+		if (child != -1)
 			waitpid(child, NULL, 0);
-		}
 
 cleanup:
 		free(in);
 		v_free_arr(tok_v);
 	}
+
+	return exitcode;
 }
 
 // vim foldmethod=marker
