@@ -1,0 +1,8 @@
+*.o
+*\.img
+*bzImage
+
+deps/lib/*
+initramfs/*
+
+compile_commands.json
