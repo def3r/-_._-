@@ -43,6 +43,8 @@ qemu-system-x86_64 \
   - Replacement: `editline`, omg thats smooth, i love it!
 - The `init` proc, `pwd` is `/`, and the envrionment vars need to be set by the `init`... well HOME is already set tho?
   - vars set for `init`: `HOME=/`, `TERM=linux`
+- `envz.h` -> GNU Extension, `environ.h` -> POSIX. Tbh `envz.h` is kinda cool, see `man envz`
+
 
 # Resources:
 1. [Is shared standard C library first initialized by kernel?](https://stackoverflow.com/questions/31623137/is-shared-standard-c-library-first-initialized-by-kernel)

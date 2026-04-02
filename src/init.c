@@ -2,24 +2,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-
 #include <sys/wait.h>
-
-// envz.h -> GNU Extension
-// environ.h -> POSIX
-// #include <envz.h> // we have environ.h .. ?
-// tbh envz.h is kinda cool, see `man envz`
+#include <unistd.h>
 
 extern char **environ;
 
-#include <editline.h>
+// Lets have static paths rn
+static char *paths[] = { "/bin/", "/sbin/" };
+static int paths_len = 2;
 
-static char *sh_prompt = " > ";
-
-// Lets have static path rn
-static char *paths[] = { "/bin/" };
-static int paths_len = 1;
+// Term-related
+#define CSI(seq) "\033[" seq
 
 void init_setenv()
 {
@@ -42,25 +35,26 @@ void init_setenv()
 
 int main(int argc, char *argv[])
 {
-	printf("\n--- Welcome to the Kernel ---\n");
+	printf("%s", CSI("2J")); // Clear screen
+	printf("%s", CSI("1;1H")); // Mov cursor to 1,1
+
+	printf("--- Welcome to the Kernel ---\n");
 	// for (char **current = environ; *current; current++) {
 	//   puts(*current);
 	// }
 
 	init_setenv();
 
+	pid_t p_cash = fork();
+	if (p_cash == 0) {
+		execlp("cash", "cash", NULL);
+		return 1;
+	}
+	waitpid(p_cash, NULL, 0);
+	printf("Time to sleep WEEEEE!\n");
+
 	while (1) {
-		char *sh_in = readline(sh_prompt);
-		printf("%s\n", sh_in);
-
-		pid_t sh_child = fork();
-		if (sh_child == 0) {
-			execlp(sh_in, sh_in, NULL);
-			return 1;
-		}
-		waitpid(sh_child, NULL, 0);
-
-		free(sh_in);
+		sleep(100);
 	}
 	return 0;
 }

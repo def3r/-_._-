@@ -4,5 +4,6 @@
 
 deps/lib/*
 initramfs/*
+build/*
 
 compile_commands.json
