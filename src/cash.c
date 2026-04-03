@@ -44,9 +44,8 @@ typedef struct DbVoidPtrVector char_v;
 	do {                                                   \
 		if (v != NULL) {                               \
 			while (v->size) {                      \
-				if (v->arr[v->size] != NULL)   \
+				if (v->arr[--v->size] != NULL) \
 					free(v->arr[v->size]); \
-				v->size--;                     \
 			}                                      \
 			free(v->arr);                          \
 			free(v);                               \
@@ -83,7 +82,7 @@ typedef struct DbVoidPtrVector char_v;
 	} while (0)
 // }}}
 
-static char *sh_prompt = "cash > ";
+#define L_M_PROMPT 256
 
 static pid_t cash_exec(char *argv[])
 {
@@ -137,6 +136,7 @@ static char_v *tokens_line(char *in)
 				v_free_arr(tok_v);
 				return NULL;
 			}
+			v_push_str(tok_v, tok_str);
 			tok_open = false;
 		}
 
@@ -147,25 +147,53 @@ static char_v *tokens_line(char *in)
 	return tok_v;
 }
 
-static void sh_cd(char_v *tok_v)
+static bool cash_cd(char_v *tok_v)
 {
-	if (chdir(tok_v->arr[1]) == -1)
+	int eval = chdir(tok_v->arr[1]);
+	if (eval == -1)
 		fprintf(stderr, "(%d): %s\n", errno, strerror(errno));
+	return eval != -1;
+}
+
+static void get_prompt(char prompt[L_M_PROMPT])
+{
+	static char host_name[128] = "\0";
+	if (host_name[0] == '\0')
+		gethostname(host_name, 128);
+
+	memset(prompt, '\0', L_M_PROMPT);
+	strcat(prompt, host_name);
+	strcat(prompt, "'s cash@");
+
+	size_t l_prompt = strlen(prompt);
+	getcwd(prompt + l_prompt, L_M_PROMPT - l_prompt);
+	if (strlen(prompt) < L_M_PROMPT - 3) {
+		strcat(prompt, " $ ");
+	}
 }
 
 int main()
 {
 	int8_t exitcode = 0;
 	bool cash_exit = false;
+
+	char prompt[L_M_PROMPT];
+	bool upd_prompt = true;
+
 	while (!cash_exit) {
-		char *in = readline(sh_prompt);
+		if (upd_prompt) {
+			get_prompt(prompt);
+			upd_prompt = false;
+		}
+		char *in = readline(prompt);
 
 		char_v *tok_v = tokens_line(in);
 		if (tok_v == NULL)
 			goto cleanup;
 
 		if (strcmp(tok_v->arr[0], "cd") == 0 && tok_v->size == 2) {
-			sh_cd(tok_v);
+			if (cash_cd(tok_v))
+				upd_prompt = true;
 			goto cleanup;
 
 		} else if (strcmp(tok_v->arr[0], "exit") == 0 &&
@@ -202,4 +230,4 @@ cleanup:
 	return exitcode;
 }
 
-// vim foldmethod=marker
+// vim: foldmethod=marker

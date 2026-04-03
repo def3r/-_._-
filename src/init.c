@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mount.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -31,10 +32,23 @@ void init_setenv()
 	path_str[path_str_offset - (path_str_offset > 0)] = '\0';
 
 	setenv("PATH", path_str, 1);
+	setenv("SHELL", "/bin/cash", 1);
+
+	free(path_str);
+}
+
+void init_mount()
+{
+	mount("proc", "/proc", "proc", 0, NULL);
+	mount("sysfs", "/sys", "sysfs", 0, NULL);
 }
 
 int main(int argc, char *argv[])
 {
+	init_mount();
+	sethostname("bombardino", 10);
+	init_setenv();
+
 	printf("%s", CSI("2J")); // Clear screen
 	printf("%s", CSI("1;1H")); // Mov cursor to 1,1
 
@@ -42,8 +56,6 @@ int main(int argc, char *argv[])
 	// for (char **current = environ; *current; current++) {
 	//   puts(*current);
 	// }
-
-	init_setenv();
 
 	pid_t p_cash = fork();
 	if (p_cash == 0) {
