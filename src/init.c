@@ -21,7 +21,7 @@ void init_setenv()
 	for (int i = 0; i < paths_len; i++) {
 		path_str_size += strlen(paths[i]) + 1;
 	}
-	char *path_str = malloc(path_str_size);
+	char *path_str = alloca(path_str_size);
 	size_t path_str_offset = 0;
 	for (int i = 0; i < paths_len; i++) {
 		size_t len = strlen(paths[i]);
@@ -33,8 +33,6 @@ void init_setenv()
 
 	setenv("PATH", path_str, 1);
 	setenv("SHELL", "/bin/cash", 1);
-
-	free(path_str);
 }
 
 void init_mount()
