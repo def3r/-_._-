@@ -53,3 +53,6 @@ qemu-system-x86_64 \
 4. [What Does 'Not Syncing' Mean in Kernel Panic? Understanding the Error Message](https://linuxvox.com/blog/what-does-not-syncing-mean-in-kernel-panic/#understanding-syncing-in-the-kernel)
 5. [Build and run a minimal Linux kernel](https://www.subrat.info/build-kernel-and-userspace/)
 6. [Building a tiny linux](https://weeraman.com/building-a-tiny-linux-kernel/)
+7. good old dlsh [Entering raw mode](https://viewsourcecode.org/snaptoken/kilo/02.enteringRawMode.html)
+8. [ANSI VANSI SPIDER](https://en.wikipedia.org/wiki/ANSI_escape_code)
+9. [TBD: ](https://stackoverflow.com/questions/1641477/how-can-i-set-an-environment-variable-for-everyone-under-my-linux-system)
