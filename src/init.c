@@ -33,6 +33,7 @@ void init_setenv()
 
 	setenv("PATH", path_str, 1);
 	setenv("SHELL", "/bin/cash", 1);
+	setenv("PAGER", "/bin/lesser", 1);
 }
 
 void init_mount()
