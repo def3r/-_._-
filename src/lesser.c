@@ -210,6 +210,8 @@ int main(int argc, char *argv[])
 	size_t offset = 0;
 	size_t topline = 0;
 	bool upd_screen = true;
+	bool upd_stl = true;
+	uint8_t g_count = 0;
 	do {
 		if (upd_screen) {
 			printf("%s", CSI("2J")); // Clear screen
@@ -253,6 +255,18 @@ int main(int argc, char *argv[])
 
 			fflush(stdout);
 			upd_screen = false;
+			upd_stl = true; // Update stl
+		}
+
+		if (upd_stl) {
+			printf(CSI("%d;1H"),
+			       term_row); // Mov cursor to term_row,1
+			printf("%s", CSI("7m")); // Invert
+			printf(" %s ", (topline + term_row < line_count) ?
+					       "MORE" :
+					       "END");
+			printf("%s", CSI("0m")); // Reset
+			upd_stl = false;
 		}
 
 		c = getchar();
@@ -272,7 +286,39 @@ int main(int argc, char *argv[])
 			topline--;
 			upd_screen = true;
 		} break;
+
+		case 'd': {
+			if (topline == line_count - 1)
+				break;
+			topline += term_row / 2;
+			topline = MIN(line_count - 1, topline);
+			upd_screen = true;
+		} break;
+
+		case 'u': {
+			if (topline == 0)
+				break;
+			topline = topline <= term_row / 2 ?
+					  0 :
+					  topline - term_row / 2;
+			upd_screen = true;
+		} break;
+
+		case 'g': {
+			if (++g_count == 1)
+				continue;
+			topline = 0;
+			upd_screen = true;
+		} break;
+
+		case 'G': {
+			topline = line_count > term_row ?
+					  line_count - term_row :
+					  0;
+			upd_screen = true;
+		} break;
 		}
 
+		g_count = 0;
 	} while (tolower(c) != 'q');
 }
