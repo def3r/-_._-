@@ -84,8 +84,15 @@ typedef struct DbVoidPtrVector char_v;
 
 #define L_M_PROMPT 256
 
-static pid_t cash_exec(char *argv[])
+struct cmd {
+	char **argv;
+	int infd, outfd, errfd;
+};
+
+static pid_t cash_exec(char_v *tok_v)
 {
+	char **argv = (char **)tok_v->arr;
+
 	pid_t child = fork();
 	if (child == -1) {
 		fprintf(stderr, "(%d): %s\n", errno, strerror(errno));
@@ -218,7 +225,7 @@ int main()
 		}
 
 		v_push(tok_v, NULL);
-		pid_t child = cash_exec((char **)tok_v->arr);
+		pid_t child = cash_exec(tok_v);
 		if (child != -1)
 			waitpid(child, NULL, 0);
 
