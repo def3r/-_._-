@@ -45,7 +45,7 @@ void init_mount()
 int main(int argc, char *argv[])
 {
 	init_mount();
-	sethostname("bombardino", 10);
+	sethostname("def3r", 5);
 	init_setenv();
 
 	printf("%s", CSI("2J")); // Clear screen
